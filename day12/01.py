@@ -9,15 +9,14 @@ with open('01.txt') as f:
         for c in conns:
             area[int(p)].add(int(c))
 
+
 def search_part1(start: int, graph: Dict[int, Set]):
     queue = deque()
     queue.append(start)
     visited = set()
     visited.add(start)
-    count = 0
     while queue:
         position = queue.popleft()
-        count += 1
         for n in graph[position]:
             if n in visited:
                 continue
