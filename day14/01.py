@@ -20,10 +20,12 @@ class Point(NamedTuple):
         # top_right = Point(1, -1)
         # bottom_left = Point(-1, 1)
         # bottom_right = Point(1, 1)
-        return [np for p in
-                [Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)] if (np := (self+p)).x > 0 and np.y > 0]
+        return [self+p for p in [Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)]]
 
-def hash(operations, width=256):
+
+def knot_hash(operations, width=256):
+    if isinstance(operations, str):
+        operations = [ord(c) for c in operations]
     operations.extend([17, 31, 73, 47, 23])
     circle = deque(range(width))
     temp = deque()
@@ -40,16 +42,6 @@ def hash(operations, width=256):
             skip_size += 1
     circle.rotate(offset)
     return "".join(f"{d:02x}" for d in [reduce(lambda a, b: a ^ b, batch) for batch in batched(circle, 16)])
-
-drive = []
-unseen = []
-for row in range(128):
-    h = hash([ord(c) for c in f"flqrgnkx-{row}"])
-    r = list(int(x) for x in ''.join([f"{int(c, 16):04b}" for c in h]))
-    unseen += [Point(x, row) for x, p in enumerate(r) if p == 1]
-    drive.append(r)
-
-print(len(unseen))
 
 
 def scan_drive(start: Point, area: List[List[int]]):
@@ -71,14 +63,23 @@ def scan_drive(start: Point, area: List[List[int]]):
     return visited
 
 
+drive = []
+unseen = []
+for row in range(128):
+    h = knot_hash([ord(c) for c in f"amgozmfv-{row}"])
+    r = bin(int(h, 16))[2:].zfill(128)
+    unseen += [Point(x, row) for x, p in enumerate(r) if p == '1']
+    drive.append(r)
+
+print("Part 1:", len(unseen))
+
 count = 0
-visited = set()
-for y, row in enumerate(drive):
-    for x, sector in enumerate(row):
-        location = Point(x, y)
-        if location not in visited:
-            if drive[y][x] == 1:
-                count += 1
-                visited |= scan_drive(location, drive)
-print(count)
-print(len(visited))
+while unseen:
+    queued = [unseen[0]]
+    while queued:
+        p = queued.pop()
+        if p in unseen:
+            unseen.remove(p)
+            queued += p.neighbours()
+    count += 1
+print("Part 2:", count)
