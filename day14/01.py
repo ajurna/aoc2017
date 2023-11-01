@@ -42,13 +42,14 @@ def hash(operations, width=256):
     return "".join(f"{d:02x}" for d in [reduce(lambda a, b: a ^ b, batch) for batch in batched(circle, 16)])
 
 drive = []
-count = 0
+unseen = []
 for row in range(128):
     h = hash([ord(c) for c in f"flqrgnkx-{row}"])
     r = list(int(x) for x in ''.join([f"{int(c, 16):04b}" for c in h]))
+    unseen += [Point(x, row) for x, p in enumerate(r) if p == 1]
     drive.append(r)
-    count += r.count(1)
-print(count)
+
+print(len(unseen))
 
 
 def scan_drive(start: Point, area: List[List[int]]):
