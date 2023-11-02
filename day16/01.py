@@ -1,6 +1,5 @@
 import re
 from collections import deque
-from functools import lru_cache
 from typing import NamedTuple, Union
 
 
@@ -11,12 +10,15 @@ class Move(NamedTuple):
 
 
 def dance(programs: str, i: int = 1) -> str:
+    seen = [programs]
     for j in range(i):
         programs = do_dance(programs)
+        if programs in seen:
+            return seen[i % len(seen)]
+        seen.append(programs)
     return programs
 
 
-@lru_cache
 def do_dance(programs):
     moves = move_list
     data = deque(programs)
